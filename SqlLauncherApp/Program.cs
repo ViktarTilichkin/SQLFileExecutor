@@ -10,8 +10,6 @@ namespace SqlLauncherApp
         {
             ISQLFileService fileControl = new SQLFileService(new MySQLFileRepository());
             fileControl.LaunchQuery().Wait();
-            Task task = fileControl.LaunchQuery();
-            Task.WaitAll(task);
         }
     }
 }

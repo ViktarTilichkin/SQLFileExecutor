@@ -12,8 +12,7 @@ namespace SqlLauncherApp.Repositories
     public interface ISQLFileRepository<T> where T : DbConnection
     {
         Task<List<string>> GetAll(T connection);
-        Task LaunchSqript(T connection, List<FileSQL> ListSqript);
-        void AddNameFile(T connection, List<FileSQL> NewFile);
+        void AddNameFile(T connection, List<string> NewFile);
         void CreateTable(T connection);
     }
 }

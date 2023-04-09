@@ -16,9 +16,9 @@ namespace SqlLauncherApp.Repositories
         private readonly string SQL_insertItem = "insert into Used_Files(FileName) values {0}";
         public MySQLFileRepository()
         {
-            CreateTable(MySqlConnection connection);
+
         }
-        public void AddNameFile(MySqlConnection connection, List<FileSQL> NewFile)
+        public void AddNameFile(MySqlConnection connection, List<string> NewFile)
         {
             if (NewFile == null) throw new ArgumentNullException(nameof(NewFile));
             if (NewFile.Count == 0) return;
@@ -33,7 +33,7 @@ namespace SqlLauncherApp.Repositories
                 MySqlCommand command = new MySqlCommand(sql, connection);
                 for (int i = 0; i < NewFile.Count; i++)
                 {
-                    string file = NewFile[i].Name;
+                    string file = NewFile[i];
                     command.Parameters.AddWithValue($"@name{i}", file);
                 }
                 command.ExecuteNonQuery();
@@ -77,36 +77,6 @@ namespace SqlLauncherApp.Repositories
             }
             connection.Close();
             return files;
-        }
-
-        public async Task LaunchSqript(MySqlConnection connection, List<FileSQL> ListSqript)
-        {
-            if (ListSqript == null) throw new ArgumentNullException(nameof(ListSqript));
-            if (ListSqript.Count == 0) return;
-            try
-            {
-                for (int i = 0; i < ListSqript.Count; i++)
-                {
-                    var sql = ListSqript[i].Сontent;
-                    Console.WriteLine(ListSqript[i]);
-                    MySqlCommand command = new MySqlCommand(sql, connection);
-                    await command.ExecuteNonQueryAsync();
-                }
-            }
-            catch (MySqlException ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                connection.Close();
-            }
         }
     }
 }

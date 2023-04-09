@@ -9,6 +9,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SqlLauncherApp.Services
 {
@@ -20,27 +21,70 @@ namespace SqlLauncherApp.Services
             m_Repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task  LaunchQuery()
+        public async Task LaunchQuery()
         {
             MySqlConnection connection = Connection();
             List<string> fileinDb = await m_Repository.GetAll(connection);
-            List<FileSQL> newfiles = new List<FileSQL>();
             List<string> files = Directory.EnumerateFiles(AppSettingHelper.PathFolder, "*.sql", SearchOption.TopDirectoryOnly).ToList();
-            //newfiles = files.Except(fileinDb);
             for (int i = 0; i < files.Count; i++)
             {
-                string name = Path.GetFileName(files[i]);
-                //if (fileinDb.Where(x => x.Name == name) != null)
-                //{
-                //    continue;
-                //}
-                FileSQL file = new FileSQL();
-                file.Name = name;
-                file.Сontent = File.ReadAllText(Path.Combine(AppSettingHelper.PathFolder, name));
-                newfiles.Add(file);
+                files[i] = Path.GetFileName(files[i]);
             }
-            await m_Repository.LaunchSqript(connection, newfiles);
-            m_Repository.AddNameFile(connection, newfiles);
+            List<string> file = files.Except(fileinDb).ToList();
+            connection.Open();
+            if (LaunchSqript(connection, file))
+            {
+                connection.Open();
+                AddSqriptName(connection, file);
+            }
+            else
+            {
+                // add log errors
+            }
+        }
+
+        private bool LaunchSqript(MySqlConnection connection, List<string> ListSqript)
+        {
+            if (ListSqript == null) throw new ArgumentNullException(nameof(ListSqript));
+            if (ListSqript.Count == 0) return false;
+            var transaction = connection.BeginTransaction();
+            try
+            {
+                for (int i = 0; i < ListSqript.Count; i++)
+                {
+                    MySqlCommand command = new MySqlCommand(File.ReadAllText(Path.Combine(AppSettingHelper.PathFolder, ListSqript[i])), connection);
+                    command.ExecuteNonQuery();
+                }
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                Console.WriteLine(ex);
+                return false;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+        private void AddSqriptName(MySqlConnection connection, List<string> ListSqript)
+        {
+            if (ListSqript == null) throw new ArgumentNullException(nameof(ListSqript));
+            if (ListSqript.Count == 0) return;
+            try
+            {
+                m_Repository.AddNameFile(connection, ListSqript);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
         private MySqlConnection Connection()
         {
@@ -56,30 +100,5 @@ namespace SqlLauncherApp.Services
                 throw new Exception("connection error");
             }
         }
-        //public void LaunchSqript(List<FileSQL> ListSqript)
-        //{
-        //    if (ListSqript == null) throw new ArgumentNullException(nameof(ListSqript));
-        //    if (ListSqript.Count == 0) return;
-        //    MySqlConnection connection = Connection();
-        //    try
-        //    {
-        //        for (int i = 0; i < ListSqript.Count; i++)
-        //        {
-        //            var sql = ListSqript[i].Сontent;
-        //            Console.WriteLine(ListSqript[i]);
-        //            //MySqlCommand command = new MySqlCommand(sql, connection);
-        //            // command.ExecuteNonQuery();
-        //        }
-        //    }
-        //    catch (MySqlException ex)
-        //    {
-        //        Console.WriteLine(ex);
-        //        throw ex;
-        //    }
-        //    finally
-        //    {
-        //        connection.Close();
-        //    }
-        //}
     }
 }
