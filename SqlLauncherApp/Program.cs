@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SqlLauncherApp.Repositories;
+using SqlLauncherApp.Services;
+using System;
 
 namespace SqlLauncherApp
 {
@@ -6,7 +8,10 @@ namespace SqlLauncherApp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            ISQLFileService fileControl = new SQLFileService(new MySQLFileRepository());
+            fileControl.LaunchQuery().Wait();
+            Task task = fileControl.LaunchQuery();
+            Task.WaitAll(task);
         }
     }
 }
