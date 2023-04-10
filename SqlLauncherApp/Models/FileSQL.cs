@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace SqlLauncherApp.Models
 {
-    public class File
+    public class FileSQL
     {
         public string Name { get; set; }
         public string Сontent { get; set; }
-        public File()
+        public FileSQL()
         {
 
         }
-        public File(string name)
+        public FileSQL(string name)
         {
             Name = name;
         }
         public override string ToString()
         {
-            return $"{Name}";
+            return $"{Name} + {Сontent}";
         }
     }
 }
