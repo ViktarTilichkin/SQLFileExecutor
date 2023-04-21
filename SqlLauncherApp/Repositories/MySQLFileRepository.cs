@@ -11,7 +11,7 @@ namespace SqlLauncherApp.Repositories
 {
     internal class MySQLFileRepository : ISQLFileRepository<MySqlConnection>
     {
-        private const string SQL_selectItems = "select * from Used_Files";
+        private const string SQL_selectItems = "select FileName from used_files";
         private const string SQL_createTable = "CREATE TABLE IF NOT EXISTS Used_Files(ID int primary key auto_increment, FileName varchar(255) not null, Date datetime default NOW());";
         private readonly string SQL_insertItem = "insert into Used_Files(FileName) values {0}";
         public MySQLFileRepository()
@@ -43,10 +43,6 @@ namespace SqlLauncherApp.Repositories
                 Console.WriteLine(ex);
                 throw ex;
             }
-            finally
-            {
-                connection.Close();
-            }
         }
 
         public void CreateTable(MySqlConnection connection)
@@ -73,7 +69,7 @@ namespace SqlLauncherApp.Repositories
             List<string> files = new List<string>();
             while (reader.Read())
             {
-                files.Add(reader.GetString(1));
+                files.Add(reader.GetString(0));
             }
             connection.Close();
             return files;
