@@ -15,6 +15,7 @@ namespace SqlLauncherApp.Services
         public async Task LaunchQuery()
         {
             var fileinDb = await m_Repository.GetAll(Connection());
+            Console.WriteLine(string.Join(",", fileinDb));
             var filesFolder = Directory.EnumerateFiles(AppSettingHelper.PathFolder, "*.sql", SearchOption.TopDirectoryOnly).Select(x => Path.GetFileName(x));
             var file = filesFolder.Except(fileinDb).ToList();
             if (LaunchSqript(Connection(), file))
@@ -23,7 +24,7 @@ namespace SqlLauncherApp.Services
             }
             else
             {
-                // Wait for updates with logging
+                Console.WriteLine("Wait for updates with logging");
             }
         }
 
